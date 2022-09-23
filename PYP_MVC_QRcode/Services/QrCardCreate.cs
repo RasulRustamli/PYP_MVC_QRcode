@@ -22,11 +22,16 @@ namespace PYP_MVC_QRcode.Services
 
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
             QRCodeData qrCodeData = qrGenerator.CreateQrCode(sb.ToString(), QRCodeGenerator.ECCLevel.Q);
+            QRCode qrCode = new QRCode(qrCodeData);
 
-            using (MemoryStream ms = new MemoryStream())
+            using (var bitmap = qrCode.GetGraphic(20))
             {
-                byte[] byteImage = ms.ToArray();
-                return Task.FromResult("data:image/png;base64," + Convert.ToBase64String(byteImage));
+                using (var stream = new System.IO.MemoryStream())
+                {
+                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    var bytes = stream.ToArray();
+                    return Task.FromResult("data:image/png;base64," + Convert.ToBase64String(bytes));
+                }
             }
         }
     }
